@@ -105,6 +105,17 @@ Route::middleware('jwt.auth')->group(function () {
     });
 
     Route::post('/subjects', function (Request $request) {
+        // A course cannot take more than 5 days
+        $starting = $request->starting_day;
+        $ending = $request->ending_day;
+        $dtStarting = DateTime::createFromFormat('Y-m-d', $starting);
+        $interval = new DateInterval('P5D');
+
+        if($starting > $ending || $ending > $dtStarting->add($interval)->format('Y-m-d')) {
+            return response()->json([
+                'error' => 'Dates are not correct, check that your course is not taking more than 5 days'
+            ], 400);
+        };
         return Subject::create($request->all());
     });
 
